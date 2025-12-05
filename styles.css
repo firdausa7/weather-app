@@ -1,0 +1,11 @@
+body {
+    background-image: url('assets/w3.avif');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  
+  .overlay {
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+  }

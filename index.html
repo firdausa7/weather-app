@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherSphere | Beautiful Weather Forecast</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                        url('https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1965&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            min-height: 100vh;
+            transition: all 0.5s ease;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .weather-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .weather-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .search-box {
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus-within {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .temp-display {
+            font-size: 5rem;
+            font-weight: 300;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            line-height: 1;
+        }
+        
+        .weather-icon {
+            filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, 0.3));
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .forecast-item {
+            transition: all 0.3s ease;
+        }
+        
+        .forecast-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .btn-glow {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="container max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-8 fade-in">
+            <h1 class="text-4xl md:text-5xl font-bold mb-2">WeatherSphere</h1>
+            <p class="text-xl opacity-90">Beautiful weather forecasts at your fingertips</p>
+        </header>
+        
+        <!-- Search Section -->
+        <div class="glass p-6 mb-8 search-box fade-in">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1 relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300"></i>
+                    <input 
+                        type="text" 
+                        id="cityInput" 
+                        placeholder="Search for a city..." 
+                        class="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    >
+                </div>
+                <button 
+                    id="searchBtn" 
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 btn-glow"
+                >
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </button>
+                <button 
+                    id="locationBtn" 
+                    class="bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                    <i class="fas fa-location-arrow"></i>
+                    <span>My Location</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading" class="hidden text-center py-12">
+            <div class="loading-spinner mb-4"></div>
+            <p class="text-xl">Fetching weather data...</p>
+        </div>
+        
+        <!-- Current Weather -->
+        <div id="weatherResult" class="hidden">
+            <div class="glass p-8 mb-8 weather-card fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="text-center md:text-left mb-6 md:mb-0">
+                        <h2 id="cityName" class="text-3xl font-bold mb-2">New York, US</h2>
+                        <p id="date" class="text-xl opacity-90 mb-4">Monday, June 12</p>
+                        <p id="condition" class="text-2xl capitalize">Clear Sky</p>
+                    </div>
+                    <div class="flex items-center">
+                        <img id="icon" src="" alt="Weather icon" class="weather-icon w-32 h-32">
+                        <div class="temp-display" id="temp">24°C</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                    <div class="text-center p-4 bg-white/10 rounded-2xl slide-in">
+                        <i class="fas fa-temperature-low text-2xl mb-2"></i>
+                        <p class="text-sm opacity-80">Feels Like</p>
+                        <p id="feelsLike" class="text-xl font-semibold">26°C</p>
+                    </div>
+                    <div class="text-center p-4 bg-white/10 rounded-2xl slide-in" style="animation-delay: 0.1s">
+                        <i class="fas fa-tint text-2xl mb-2"></i>
+                        <p class="text-sm opacity-80">Humidity</p>
+                        <p id="humidity" class="text-xl font-semibold">65%</p>
+                    </div>
+                    <div class="text-center p-4 bg-white/10 rounded-2xl slide-in" style="animation-delay: 0.2s">
+                        <i class="fas fa-wind text-2xl mb-2"></i>
+                        <p class="text-sm opacity-80">Wind Speed</p>
+                        <p id="wind" class="text-xl font-semibold">12 km/h</p>
+                    </div>
+                    <div class="text-center p-4 bg-white/10 rounded-2xl slide-in" style="animation-delay: 0.3s">
+                        <i class="fas fa-compress-alt text-2xl mb-2"></i>
+                        <p class="text-sm opacity-80">Pressure</p>
+                        <p id="pressure" class="text-xl font-semibold">1015 hPa</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 5-Day Forecast -->
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold mb-4 fade-in">5-Day Forecast</h3>
+                <div id="forecast" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <!-- Forecast items will be inserted here by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Additional Info -->
+            <div class="glass p-6 fade-in">
+                <h3 class="text-2xl font-bold mb-4">Weather Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex items-center justify-between p-4 bg-white/10 rounded-2xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-sun text-yellow-400 text-xl"></i>
+                            <span>UV Index</span>
+                        </div>
+                        <span id="uvIndex" class="font-semibold">5 (Moderate)</span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-white/10 rounded-2xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-eye text-xl"></i>
+                            <span>Visibility</span>
+                        </div>
+                        <span id="visibility" class="font-semibold">10 km</span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-white/10 rounded-2xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-cloud-rain text-xl"></i>
+                            <span>Rain Chance</span>
+                        </div>
+                        <span id="rainChance" class="font-semibold">10%</span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-white/10 rounded-2xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-cloud text-xl"></i>
+                            <span>Cloudiness</span>
+                        </div>
+                        <span id="cloudiness" class="font-semibold">20%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="text-center mt-12 opacity-70 text-sm fade-in">
+            <p>Powered by OpenWeatherMap • Designed with ❤️ for beautiful weather experiences</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
